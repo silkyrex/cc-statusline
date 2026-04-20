@@ -88,14 +88,34 @@ def pomo_status():
         pass
     return None
 
+def session_name(sid):
+    if not sid: return ''
+    import re
+    for p in (Path.home() / '.claude' / 'projects').glob(f'*/{sid}.jsonl'):
+        try:
+            m = re.findall(r'"customTitle":"([^"]+)"', p.read_text())
+            if m: return m[-1]
+        except Exception: pass
+        break
+    auto = Path.home() / '.claude' / 'auto-labels' / f'{sid}.txt'
+    try:
+        n = auto.read_text().strip()
+        if n: return f'~{n}'
+    except Exception: pass
+    return ''
+
 try:
     import sys
     ctx_pct = None
+    sid = None
     try:
         stdin_data = json.loads(sys.stdin.read())
         ctx_pct = stdin_data.get('context_window', {}).get('used_percentage')
+        sid = stdin_data.get('session_id')
     except Exception:
         pass
+    name = session_name(sid)
+    name_str = f'  |  {name}' if name else ''
 
     by_day = load_cache()
     if by_day is None:
@@ -114,7 +134,7 @@ try:
     w_pct = (w_opus / w_out * 100) if w_out else 0
     ctx_str = f'  ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
     snt_str = f'  snt {fmt(t_sonnet)}' if t_sonnet else ''
-    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}  |  reset {reset_countdown()}'
+    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}  |  reset {reset_countdown()}{name_str}'
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 except Exception as e:
