@@ -1,4 +1,4 @@
-# cc-session-label
+# cc-statusline
 
 > Claude Code status line + automatic session labeling. 7-day token burn, today's usage, context %, weekly-reset countdown, and a session name derived from your first prompt (or set with `/rename`).
 
@@ -52,8 +52,8 @@ If the first prompt is a slash command (`/today`, `/someday-review`, etc.), no a
 ## Install
 
 ```bash
-git clone https://github.com/silkyrex/cc-session-label.git
-cd cc-session-label
+git clone https://github.com/silkyrex/cc-statusline.git
+cd cc-statusline
 bash install.sh
 ```
 
