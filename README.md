@@ -2,7 +2,7 @@
 
 > Lightweight Claude Code status line: 7-day token burn, today's usage, context %, and a weekly-reset countdown.
 
-![status line](screenshot.png)
+![status line](!mv ~/Documents/Screenshot\ 2026-04-20\ at\ 3.02.40\ PM.png /tmp/cc-session-label/screenshot.png)
 
 ```
 7d: 20.0M  ~$428  opus 67%  |  today: 3.0M  opus 899K  snt 2.0M  ctx 62%  |  reset 2d21h  time 59%
