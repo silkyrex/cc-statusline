@@ -36,7 +36,11 @@ chmod +x "$STATUS_SCRIPT" "$AUTO_LABEL_SCRIPT"
 echo "✓ Status script installed at $STATUS_SCRIPT"
 echo "✓ Auto-label script installed at $AUTO_LABEL_SCRIPT"
 
-[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+if [ -f "$SETTINGS" ]; then
+  cp "$SETTINGS" "$SETTINGS.bak.$(date +%s)"
+else
+  echo '{}' > "$SETTINGS"
+fi
 
 python3 - "$SETTINGS" "$STATUS_SCRIPT" "$AUTO_LABEL_SCRIPT" << 'EOF'
 import json, sys
