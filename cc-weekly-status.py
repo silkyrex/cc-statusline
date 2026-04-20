@@ -6,6 +6,7 @@ Caches to ~/.claude/cc-burn-cache.json (TTL 90s) since full scan is ~2s.
 """
 import json, datetime, time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 CACHE = Path.home() / '.claude' / 'cc-burn-cache.json'
 TTL = 90  # seconds
@@ -58,6 +59,14 @@ def save_cache(by_day):
     try: CACHE.write_text(json.dumps({'ts': time.time(), 'by_day': by_day}))
     except: pass
 
+def reset_countdown():
+    pt = ZoneInfo('America/Los_Angeles')
+    anchor = datetime.datetime(2026, 4, 23, 12, 0, tzinfo=pt)
+    delta = (anchor - datetime.datetime.now(pt)).total_seconds()
+    delta %= 7 * 86400
+    pct_used = (1 - delta / (7 * 86400)) * 100
+    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h  time {pct_used:.0f}%'
+
 def pomo_status():
     state_file = Path.home() / '.claude' / 'pomo-state.json'
     try:
@@ -82,18 +91,9 @@ def pomo_status():
 try:
     import sys
     ctx_pct = None
-    session_name = ''
     try:
-        import re
         stdin_data = json.loads(sys.stdin.read())
         ctx_pct = stdin_data.get('context_window', {}).get('used_percentage')
-        session_id = stdin_data.get('session_id', '')
-        if session_id:
-            sjsonl = Path.home() / '.claude' / 'projects' / '-Users-rzhu' / f'{session_id}.jsonl'
-            try:
-                m = re.findall(r'"customTitle":"([^"]+)"', sjsonl.read_text())
-                if m: session_name = m[-1]
-            except: pass
     except Exception:
         pass
 
@@ -114,8 +114,7 @@ try:
     w_pct = (w_opus / w_out * 100) if w_out else 0
     ctx_str = f'  ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
     snt_str = f'  snt {fmt(t_sonnet)}' if t_sonnet else ''
-    name_str = f' | {session_name}' if session_name else ''
-    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}{name_str}'
+    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}  |  reset {reset_countdown()}'
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 except Exception as e:
