@@ -1,6 +1,6 @@
 # cc-statusline
 
-> Lightweight Claude Code status line: 7-day token burn, today's usage, context %, and a weekly-reset countdown.
+`/usage` shows totals. This shows burn rate, model mix, and time-to-reset.
 
 
 ```
