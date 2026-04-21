@@ -4,7 +4,7 @@
 
 
 ```
-7d: 20.0M  ~$428  opus 67%  |  today: 3.0M  opus 899K  snt 2.0M  ctx 62%  |  reset 2d21h  time 59%
+7d: 20.0M  ~$428  opus 67%  |  today: 3.0M  opus 899K  snt 2.0M  ctx 62%  |  2d10h 65%  ~$656/wk  cache 132x
 ```
 
 If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
@@ -20,8 +20,9 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 | `opus 899K` | Today's Opus output. |
 | `snt 2.0M` | Today's Sonnet output (shown only if non-zero). |
 | `ctx 62%` | Current session context window usage. Comes from Claude Code's status-line stdin payload. |
-| `reset 2d21h` | Time until the next weekly reset anchor. |
-| `time 59%` | Percent of the 7-day window that has elapsed since the last reset. Pairs with the `/usage` dialog's "X% used". |
+| `2d10h 65%` | Time until the next weekly reset anchor, and percent of the current cycle elapsed. |
+| `~$656/wk` | Projected weekly spend based on current burn rate. Shown once ≥10% of the cycle has elapsed. If you're 65% through the week and spent $428, this shows `~$656/wk`. Suppressed early in the week when the projection is unreliable. |
+| `cache 132x` | 7-day cache-read tokens divided by output tokens. How hard your prefix cache is working. Higher is better. |
 
 ## Install
 
