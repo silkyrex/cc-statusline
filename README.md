@@ -40,6 +40,14 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 
 **Alert thresholds:** `ctx > 80%` = compact soon. `cache < 10x` = prefix cache broken. `opus% > 70%` = overpaying, route more to Sonnet.
 
+### Planned improvements
+
+| Field | Target | Change |
+|---|---|---|
+| `opus 899K` / `snt 2.0M` | D → B | Replace raw today-model counts with today's cost + mix: `today: ~$45 (opus 30%)`. A dollar and a ratio are readable; raw token counts are not. |
+| `7d: 20.0M` | C → B+ | Merge with `~$428`. Dollar first, tokens in parens: `7d: ~$428 (20M)`. Two fields doing the same job as one. |
+| `today: 3.0M` | C → B | Add delta vs. 7-day daily average: `today: 3.0M (+40%)`. Without the comparison it's just a number. |
+
 ## Install
 
 ```bash
