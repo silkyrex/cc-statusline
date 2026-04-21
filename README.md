@@ -13,16 +13,32 @@ If a Pomodoro session is active, a `🍅 P1 14m  |  ` prefix is added.
 
 | Field | Meaning |
 |---|---|
-| `7d: 20.0M` | Total output tokens across all models over the rolling last 7 days, scanned from session JSONLs in `~/.claude/projects/`. |
-| `~$428` | Estimated API-equivalent cost of that 7-day output at flat per-million rates (Opus $25, Sonnet $15, Haiku $5). Sanity check, not a bill. Input tokens are not counted. |
-| `opus 67%` | Share of the 7-day output that came from Opus. Mix indicator, not a quota. |
-| `today: 3.0M` | Output tokens so far today (local date). |
+| `7d: 20.0M` | Output tokens (≈ words) over the last 7 days. |
+| `~$428` | 7d output cost at API rates. Opus $25/M, Sonnet $15/M, Haiku $5/M. Output only — real API bill is higher. |
+| `opus 67%` | Opus share of 7d output. Lower = cheaper. |
+| `today: 3.0M` | Output tokens today. Catches runaway sessions. |
 | `opus 899K` | Today's Opus output. |
-| `snt 2.0M` | Today's Sonnet output (shown only if non-zero). |
-| `ctx 62%` | Current session context window usage. Comes from Claude Code's status-line stdin payload. |
-| `2d10h 65%` | Time until the next weekly reset anchor, and percent of the current cycle elapsed. |
-| `~$656/wk` | Projected weekly spend based on current burn rate. Shown once ≥10% of the cycle has elapsed. If you're 65% through the week and spent $428, this shows `~$656/wk`. Suppressed early in the week when the projection is unreliable. |
-| `cache 132x` | 7-day cache-read tokens divided by output tokens. How hard your prefix cache is working. Higher is better. |
+| `snt 2.0M` | Today's Sonnet output (hidden if zero). |
+| `ctx 62%` | Current session context usage. Compacts near 100%. |
+| `2d10h 65%` | Time until weekly reset and % of cycle elapsed. |
+| `~$656/wk` | Weekly spend on current pace. Hidden early in cycle. |
+| `cache 132x` | Cache reads per output token. Higher = better. Near 1x = nothing cached, full price every turn. |
+
+### Usefulness
+
+| Field | Grade | Why |
+|---|---|---|
+| `ctx 62%` | A | Changes mid-session, demands action near 100%. |
+| `~$656/wk` | A | Only forward-looking number. Triggers slow-down decisions. |
+| `~$428` | B+ | Raw baseline. Slightly redundant with weekly projection but anchors it. |
+| `cache 132x` | B+ | Silent health check. A broken cache is expensive and invisible. |
+| `opus 67%` | B | Tells you to reroute tasks to Sonnet when high. |
+| `2d10h 65%` | B | Useful for pacing spend against a weekly budget. |
+| `today: 3.0M` | C | Runaway-session signal, but `ctx %` does that better in real time. |
+| `7d: 20.0M` | C | Gives context for the cost number; raw token count alone is meaningless. |
+| `opus 899K` / `snt 2.0M` | D | Today's model breakdown. The 7d `opus %` is more useful; noise unless debugging. |
+
+**Alert thresholds:** `ctx > 80%` = compact soon. `cache < 10x` = prefix cache broken. `opus% > 70%` = overpaying, route more to Sonnet.
 
 ## Install
 
