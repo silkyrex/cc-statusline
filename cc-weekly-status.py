@@ -40,11 +40,12 @@ def scan():
                     day = e.get('timestamp', '')[:10]
                     if not day: continue
                     model = msg.get('model', '')
-                    bucket = by_day.setdefault(day, {'out': 0, 'opus': 0, 'sonnet': 0, 'cost': 0.0})
+                    bucket = by_day.setdefault(day, {'out': 0, 'opus': 0, 'sonnet': 0, 'cost': 0.0, 'cache_r': 0})
                     bucket['out'] += out
                     if 'opus' in model: bucket['opus'] += out
                     if 'sonnet' in model: bucket['sonnet'] += out
                     bucket['cost'] += out * rate(model) / 1_000_000
+                    bucket['cache_r'] += u.get('cache_read_input_tokens', 0)
         except: pass
     return by_day
 
@@ -65,7 +66,8 @@ def reset_countdown():
     delta = (anchor - datetime.datetime.now(pt)).total_seconds()
     delta %= 7 * 86400
     pct_used = (1 - delta / (7 * 86400)) * 100
-    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h  time {pct_used:.0f}%'
+    return f'{int(delta // 86400)}d{int((delta % 86400) // 3600):02d}h {pct_used:.0f}%'
+
 
 def pomo_status():
     state_file = Path.home() / '.claude' / 'pomo-state.json'
@@ -88,34 +90,14 @@ def pomo_status():
         pass
     return None
 
-def session_name(sid):
-    if not sid: return ''
-    import re
-    for p in (Path.home() / '.claude' / 'projects').glob(f'*/{sid}.jsonl'):
-        try:
-            m = re.findall(r'"customTitle":"([^"]+)"', p.read_text())
-            if m: return m[-1]
-        except Exception: pass
-        break
-    auto = Path.home() / '.claude' / 'auto-labels' / f'{sid}.txt'
-    try:
-        n = auto.read_text().strip()
-        if n: return f'~{n}'
-    except Exception: pass
-    return ''
-
 try:
     import sys
     ctx_pct = None
-    sid = None
     try:
         stdin_data = json.loads(sys.stdin.read())
         ctx_pct = stdin_data.get('context_window', {}).get('used_percentage')
-        sid = stdin_data.get('session_id')
     except Exception:
         pass
-    name = session_name(sid)
-    name_str = f'  |  {name}' if name else ''
 
     by_day = load_cache()
     if by_day is None:
@@ -127,14 +109,17 @@ try:
     w_out = sum(by_day[d]['out'] for d in dates)
     w_opus = sum(by_day[d]['opus'] for d in dates)
     w_cost = sum(by_day[d]['cost'] for d in dates)
+    w_cache_r = sum(by_day[d].get('cache_r', 0) for d in dates)
 
     t = by_day.get(today, {'out': 0, 'opus': 0, 'sonnet': 0})
     t_out, t_opus, t_sonnet = t['out'], t['opus'], t.get('sonnet', 0)
 
     w_pct = (w_opus / w_out * 100) if w_out else 0
-    ctx_str = f'  ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
+    cache_ratio = int(w_cache_r / w_out) if w_out else 0
+    cache_str = f'  cache {cache_ratio}x' if cache_ratio else ''
     snt_str = f'  snt {fmt(t_sonnet)}' if t_sonnet else ''
-    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}  |  reset {reset_countdown()}{name_str}'
+    ctx_str = f'  ctx {ctx_pct:.0f}%' if ctx_pct is not None else ''
+    token_line = f'7d: {fmt(w_out)}  ~${w_cost:.0f}  opus {w_pct:.0f}%  |  today: {fmt(t_out)}  opus {fmt(t_opus)}{snt_str}{ctx_str}  |  {reset_countdown()}{cache_str}'
     pomo = pomo_status()
     print(f'{pomo}  |  {token_line}' if pomo else token_line)
 except Exception as e:
