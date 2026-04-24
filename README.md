@@ -1,5 +1,7 @@
 # cc-statusline
 
+> **Note:** This repo tracks output tokens only — a deliberate lightweight proxy. For accurate full billing (input + output + cache writes + cache reads), see [cc-status](https://github.com/silkyrex/cc-status).
+
 `/usage` shows totals. This shows burn rate, model mix, and time-to-reset.
 
 
